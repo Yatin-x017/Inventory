@@ -3,8 +3,9 @@ import { animate } from 'framer-motion'
 
 // A restrained "counting up" number — the one signature motion moment for
 // hero stats. Ties to framer-motion (already a dependency) rather than a
-// dedicated counter library.
-export default function AnimatedNumber({ value, prefix = '', duration = 1, className = '' }) {
+// dedicated counter library. Defaults to the metric typeface (Space
+// Grotesk, tabular figures) since this component only ever renders numbers.
+export default function AnimatedNumber({ value, prefix = '', duration = 0.9, className = '', metric = true }) {
   const [display, setDisplay] = useState(0)
   const prev = useRef(0)
 
@@ -19,7 +20,7 @@ export default function AnimatedNumber({ value, prefix = '', duration = 1, class
   }, [value, duration])
 
   return (
-    <span className={className}>
+    <span className={`${metric ? 'text-metric' : ''} ${className}`}>
       {prefix}
       {Math.round(display).toLocaleString('en-IN')}
     </span>
