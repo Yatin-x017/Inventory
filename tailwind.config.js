@@ -29,6 +29,8 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        headline: ['"Inter Tight"', 'Inter', 'system-ui', 'sans-serif'],
+        metric: ['"Space Grotesk"', '"Inter Tight"', 'Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         xl: '14px',
@@ -39,6 +41,8 @@ export default {
         card: '0 1px 2px rgb(0 0 0 / 0.03), 0 1px 1px rgb(0 0 0 / 0.02)',
         'card-hover': '0 16px 32px -12px rgb(0 0 0 / 0.10), 0 4px 10px -6px rgb(0 0 0 / 0.05)',
         float: '0 12px 40px -8px rgb(0 0 0 / 0.06)',
+        button: '0 1px 2px rgb(0 0 0 / 0.04), 0 8px 16px -6px rgb(37 99 235 / 0.28)',
+        'button-hover': '0 2px 4px rgb(0 0 0 / 0.05), 0 12px 24px -6px rgb(37 99 235 / 0.36)',
       },
       keyframes: {
         'fade-in': { from: { opacity: 0, transform: 'translateY(4px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
