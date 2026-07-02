@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* DR Telecom — light theme. Apple-style neutral canvas: near-white page,
+     pure-white cards, graphite text, restrained blue used only for actions. */
+  --c-bg: 250 250 252;
+  --c-surface: 255 255 255;
+  --c-border: 228 228 233;
+  --c-text: 29 29 31;
+  --c-muted: 110 110 115;
+  --c-accent: 0 113 227;
+  --c-accent-soft: 232 242 254;
+  --c-danger: 239 68 68;
+  --c-danger-soft: 254 232 232;
+  --c-success: 16 185 129;
+  --c-success-soft: 224 250 240;
+  --c-warning: 249 115 22;
+  --c-warning-soft: 255 237 220;
+}
+
+
+
+* { box-sizing: border-box; }
+
+html { -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+/* Prevent iOS Safari's auto-zoom-on-focus, which fires whenever a focused
+   field's font-size is under 16px. Below the sm breakpoint we bump inputs
+   up to 16px so tapping a field never yanks the viewport around. */
+@media (max-width: 639px) {
+  input, select, textarea { font-size: 16px; }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--c-border));
+  border-radius: 999px;
+  border: 2px solid rgb(var(--c-bg));
+}
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Smooth focus rings everywhere instead of default outline */
+:focus-visible {
+  outline: 2px solid rgb(var(--c-accent));
+  outline-offset: 2px;
+}
+
+.glass {
+  background: rgb(var(--c-surface) / 0.8);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+/* Hides the scrollbar on horizontally-swipeable strips (mobile stat cards,
+   tag filter pills) while keeping the element scrollable by touch/wheel. */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Headline treatment used for hero numbers / page titles — tighter tracking
+   reads more like premium native software than default browser spacing. */
+.text-headline {
+  letter-spacing: -0.02em;
+  font-feature-settings: 'ss01' 1, 'cv01' 1;
+}
+
+@layer components {
+  .progress-track {
+    @apply h-1.5 w-full rounded-full bg-border overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full rounded-full bg-accent transition-all duration-500 ease-out;
+  }
+
+  /* Signature accent — a single, restrained shine sweep. Used on one
+     hero CTA at a time, never globally, per "spend your boldness in one place". */
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-shine::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    left: -75%;
+    width: 45%;
+    background: linear-gradient(115deg, transparent, rgb(255 255 255 / 0.4), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn-shine:hover::after {
+    left: 125%;
+  }
+}
