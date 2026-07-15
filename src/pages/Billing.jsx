@@ -91,33 +91,34 @@ export default function Billing() {
     })
   }
 
-  // ─── NEW: Add a serialized unit to the cart ───
+  // ─── Add a serialized unit to the cart ───
   function addSerializedToCart(product, units) {
+    if (!Array.isArray(units) || units.length === 0) {
+      setError('No units available for this product.')
+      return
+    }
     const available = units.filter((u) => !u.sold_at && !u.reserved_at)
     const unit = available[0]
     if (!unit) {
-      setError(`${product.brand} ${product.model} is out of stock.`)
+      setError(`${product?.brand || ''} ${product?.model || ''} is out of stock.`.trim())
       return
     }
     setError('')
-    const label = `${product.brand} ${product.model} ${product.color || ''}`.trim()
+    const label = `${product?.brand || ''} ${product?.model || ''} ${product?.color || ''}`.trim()
     setCart((prev) => {
       const existing = prev.find((l) => l.item_id === unit.id)
-      if (existing) {
-        // Serialized items are always qty 1; ignore duplicate clicks
-        return prev
-      }
+      if (existing) return prev // serialized = qty 1, ignore duplicates
       return [
         ...prev,
         {
-          item_id: unit.id,                 // unique inventory unit id
+          item_id: unit.id,
           item_name: label,
-          item_sku: product.sku ?? '',
-          unit_price: Number(product.price) || 0,
+          item_sku: product?.sku ?? '',
+          unit_price: Number(product?.price) || 0,
           quantity: 1,
           location_id: unit.location_id,
           location_label: unit.location_label,
-          maxQty: 1,                        // serialized = always 1
+          maxQty: 1,
           serial: unit.serial,
           imei1: unit.imei1,
           imei2: unit.imei2,
@@ -190,7 +191,7 @@ export default function Billing() {
         customerEmail,
         customerPhone,
         notes,
-        cartLines: cart.map(({ maxQty, ...line }) => line),
+        cartLines: cart.map(({ maxQty, serial, imei1, imei2, ...line }) => line),
         discount: discountValue,
         paymentMethod,
         emiCompany,
@@ -283,13 +284,13 @@ export default function Billing() {
               {results.map((result) => {
                 if (result.kind === 'serialized') {
                   const { product, units } = result
-                  const available = units.filter((u) => !u.sold_at && !u.reserved_at)
+                  const available = units?.filter?.((u) => !u.sold_at && !u.reserved_at) ?? []
                   const stock = available.length
-                  const label = `${product.brand} ${product.model} ${product.color || ''}`.trim()
+                  const label = `${product?.brand || ''} ${product?.model || ''} ${product?.color || ''}`.trim()
                   const outOfStock = stock <= 0
                   return (
                     <div
-                      key={`serialized-${product.id}`}
+                      key={`serialized-${product?.id}`}
                       className={`flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3 shadow-card ${
                         outOfStock ? 'opacity-50' : ''
                       }`}
@@ -306,7 +307,7 @@ export default function Billing() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-[13.5px] font-semibold">{formatMoney(product.price)}</span>
+                        <span className="text-[13.5px] font-semibold">{formatMoney(product?.price)}</span>
                         <button
                           onClick={() => addSerializedToCart(product, units)}
                           disabled={outOfStock}
@@ -459,7 +460,6 @@ export default function Billing() {
                     <div className="min-w-0">
                       <div className="truncate text-[13px] font-medium">{l.item_name}</div>
                       <div className="text-[11.5px] text-muted">{l.location_label}</div>
-                      {/* Show IMEI/serial in cart for serialized items */}
                       {(l.imei1 || l.serial) && (
                         <div className="mt-0.5 text-[11px] font-mono text-muted">
                           {l.imei1 ? `IMEI: ${l.imei1}` : `S/N: ${l.serial}`}
@@ -588,7 +588,7 @@ export default function Billing() {
                       type="number"
                       min="0"
                       placeholder="Paid amount *"
-                      value={passedAmount}
+                      value={paidAmount}
                       onChange={(e) => { setPaidAmountTouched(true); setPaidAmount(e.target.value) }}
                       required
                       className="w-full bg-transparent text-[13px] outline-none placeholder:text-muted"
