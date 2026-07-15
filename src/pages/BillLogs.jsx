@@ -62,20 +62,46 @@ export default function BillLogs() {
   const [generatingPdfId, setGeneratingPdfId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
   const [showImport, setShowImport] = useState(false)
+  const [filterMonth, setFilterMonth] = useState('')
+  const [filterDate, setFilterDate] = useState('')
 
   useEffect(() => {
     fetchBillLogs()
   }, [])
 
   const filtered = useMemo(() => {
+    let results = billLogs
+
+    // Filter by search query
     const q = query.trim().toLowerCase()
-    if (!q) return billLogs
-    return billLogs.filter((b) =>
-      [b.customer_name, b.customer_phone, b.invoice_number]
-        .filter(Boolean)
-        .some((v) => v.toLowerCase().includes(q))
-    )
-  }, [billLogs, query])
+    if (q) {
+      results = results.filter((b) =>
+        [b.customer_name, b.customer_phone, b.invoice_number]
+          .filter(Boolean)
+          .some((v) => v.toLowerCase().includes(q))
+      )
+    }
+
+    // Filter by month (YYYY-MM)
+    if (filterMonth) {
+      results = results.filter((b) => {
+        if (!b.created_at) return false
+        const billDate = new Date(b.created_at).toISOString().slice(0, 7)
+        return billDate === filterMonth
+      })
+    }
+
+    // Filter by specific date (YYYY-MM-DD)
+    if (filterDate) {
+      results = results.filter((b) => {
+        if (!b.created_at) return false
+        const billDate = new Date(b.created_at).toISOString().slice(0, 10)
+        return billDate === filterDate
+      })
+    }
+
+    return results
+  }, [billLogs, query, filterMonth, filterDate])
 
   const totals = useMemo(() => {
     const revenue = billLogs.reduce((s, b) => s + (b.total || 0), 0)
@@ -181,25 +207,65 @@ export default function BillLogs() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
-        <StatCard icon={FileText} label="Bills" value={totals.count} hint="In the past year" tone="accent" />
+        <StatCard icon={FileText} label="Bills" value={filtered.length} hint={filterMonth || filterDate ? 'Filtered results' : 'In the past year'} tone="accent" />
         <StatCard
           icon={IndianRupee}
           label="Total Revenue"
-          value={formatMoney(totals.revenue)}
-          hint="Across all logged bills"
+          value={formatMoney(filtered.reduce((s, b) => s + (b.total || 0), 0))}
+          hint={filterMonth || filterDate ? 'From filtered bills' : 'Across all logged bills'}
           tone="success"
           className="col-span-2 lg:col-span-1"
         />
       </div>
 
-      <div className="relative">
-        <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-        <input
-          placeholder="Search by customer name, phone, or invoice number…"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full rounded-xl border border-border bg-surface py-2.5 pl-10 pr-3.5 text-[13.5px] outline-none transition-colors placeholder:text-muted focus:border-accent"
-        />
+      <div className="flex flex-col gap-3">
+        <div className="relative">
+          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
+          <input
+            placeholder="Search by customer name, phone, or invoice number…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full rounded-xl border border-border bg-surface py-2.5 pl-10 pr-3.5 text-[13.5px] outline-none transition-colors placeholder:text-muted focus:border-accent"
+          />
+        </div>
+
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+          <div className="flex-1">
+            <label className="mb-1 block px-0.5 text-[11.5px] font-medium text-muted">
+              Filter by Month
+            </label>
+            <input
+              type="month"
+              value={filterMonth}
+              onChange={(e) => setFilterMonth(e.target.value)}
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-[13.5px] outline-none transition-colors focus:border-accent"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="mb-1 block px-0.5 text-[11.5px] font-medium text-muted">
+              Filter by Date
+            </label>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-[13.5px] outline-none transition-colors focus:border-accent"
+            />
+          </div>
+          {(filterMonth || filterDate) && (
+            <div className="flex items-end">
+              <button
+                onClick={() => {
+                  setFilterMonth('')
+                  setFilterDate('')
+                }}
+                className="rounded-lg border border-border bg-surface px-3 py-2 text-[13px] font-medium text-muted transition-colors hover:border-accent hover:text-accent"
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {billLogsLoading && <p className="text-[13px] text-muted">Loading…</p>}
